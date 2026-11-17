@@ -1,0 +1,456 @@
+{
+  "last_node_id": 7,
+  "last_link_id": 8,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        0,
+        60
+      ],
+      "size": [
+        310,
+        300
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2,
+            5
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png"
+      }
+    },
+    {
+      "id": 2,
+      "type": "LoadDA3Model",
+      "pos": [
+        0,
+        500
+      ],
+      "size": [
+        310,
+        300
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "DA3_MODEL",
+          "type": "DA3_MODEL",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadDA3Model"
+      },
+      "widgets_values": [
+        "depth_anything_3_mono_large.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "model_name": "depth_anything_3_mono_large.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    {
+      "id": 3,
+      "type": "DA3Inference",
+      "pos": [
+        380,
+        500
+      ],
+      "size": [
+        310,
+        300
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "da3_model",
+          "type": "DA3_MODEL",
+          "link": 1
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "da3_geometry",
+          "type": "DA3_GEOMETRY",
+          "links": [
+            3
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DA3Inference"
+      },
+      "widgets_values": [
+        504,
+        "upper_bound_resize",
+        "mono"
+      ],
+      "widgets_values_named": {
+        "resolution": 504,
+        "resize_method": "upper_bound_resize",
+        "mode": "mono"
+      }
+    },
+    {
+      "id": 4,
+      "type": "LoadIW3StereoModels",
+      "pos": [
+        380,
+        60
+      ],
+      "size": [
+        310,
+        300
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "models",
+          "type": "IW3_STEREO_MODELS",
+          "links": [
+            4,
+            7
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadIW3StereoModels"
+      },
+      "widgets_values": [
+        "auto",
+        true
+      ],
+      "widgets_values_named": {
+        "device": "auto",
+        "download_missing": true
+      }
+    },
+    {
+      "id": 5,
+      "type": "IW3DepthFromDA3",
+      "pos": [
+        760,
+        220
+      ],
+      "size": [
+        310,
+        300
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "da3_geometry",
+          "type": "DA3_GEOMETRY",
+          "link": 3
+        },
+        {
+          "name": "models",
+          "type": "IW3_STEREO_MODELS",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "depth",
+          "type": "IW3_DEPTH",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "processed_depth",
+          "type": "IMAGE",
+          "links": [],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "IW3DepthFromDA3"
+      },
+      "widgets_values": [
+        true,
+        2,
+        2,
+        false,
+        0.2
+      ],
+      "widgets_values_named": {
+        "depth_aa": true,
+        "edge_fix_x": 2,
+        "edge_fix_y": 2,
+        "invert_depth": false,
+        "distance_shift": 0.2
+      }
+    },
+    {
+      "id": 6,
+      "type": "IW3Stereo",
+      "pos": [
+        1140,
+        200
+      ],
+      "size": [
+        335,
+        510
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 5
+        },
+        {
+          "name": "depth",
+          "type": "IW3_DEPTH",
+          "link": 6
+        },
+        {
+          "name": "models",
+          "type": "IW3_STEREO_MODELS",
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "stereo",
+          "type": "IMAGE",
+          "links": [
+            8
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "left",
+          "type": "IMAGE",
+          "links": [],
+          "slot_index": 1
+        },
+        {
+          "name": "right",
+          "type": "IMAGE",
+          "links": [],
+          "slot_index": 2
+        },
+        {
+          "name": "left_gap",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 3
+        },
+        {
+          "name": "right_gap",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 4
+        },
+        {
+          "name": "left_repair",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 5
+        },
+        {
+          "name": "right_repair",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 6
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "IW3Stereo"
+      },
+      "widgets_values": [
+        "forward_inpaint",
+        2.0,
+        0.5,
+        0.0,
+        0.0,
+        1.0,
+        0,
+        0,
+        "left-right",
+        "require_aligned"
+      ],
+      "widgets_values_named": {
+        "method": "forward_inpaint",
+        "divergence": 2.0,
+        "convergence": 0.5,
+        "balance": 0.0,
+        "separation": 0.0,
+        "depth_exponent": 1.0,
+        "mask_inner_dilation": 0,
+        "mask_outer_dilation": 0,
+        "layout": "left-right",
+        "depth_resize": "require_aligned"
+      }
+    },
+    {
+      "id": 7,
+      "type": "SaveImage",
+      "pos": [
+        1550,
+        200
+      ],
+      "size": [
+        310,
+        300
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "iw3/Basic_DA3_SBS"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "iw3/Basic_DA3_SBS"
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      3,
+      0,
+      "DA3_MODEL"
+    ],
+    [
+      2,
+      1,
+      0,
+      3,
+      1,
+      "IMAGE"
+    ],
+    [
+      3,
+      3,
+      0,
+      5,
+      0,
+      "DA3_GEOMETRY"
+    ],
+    [
+      4,
+      4,
+      0,
+      5,
+      1,
+      "IW3_STEREO_MODELS"
+    ],
+    [
+      5,
+      1,
+      0,
+      6,
+      0,
+      "IMAGE"
+    ],
+    [
+      6,
+      5,
+      0,
+      6,
+      1,
+      "IW3_DEPTH"
+    ],
+    [
+      7,
+      4,
+      0,
+      6,
+      2,
+      "IW3_STEREO_MODELS"
+    ],
+    [
+      8,
+      6,
+      0,
+      7,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.65,
+      "offset": [
+        40,
+        40
+      ]
+    }
+  },
+  "version": 0.4
+}

@@ -1,0 +1,74 @@
+{
+  "nunif": "51117db0ba3a0ef9a949ac58c3386333156258af",
+  "ComfyStereo": "f327c7c7e0bdd647906768392f2a6b26a43aa5ef",
+  "resolve-iw3": "1bc1d8ff900afb010c236f6a4f0865d67af32038",
+  "SSStereoscope": "30372fec69a1929ce6eb5fded8d23ba2604fd68f",
+  "files": {
+    "nunif/modules/compile_wrapper.py": {
+      "sha256": "8ed0d2540994b9f8f3967eca86fdbd9ddcc3c59843ce8c985eb6a2c906a3ae99",
+      "destination": "compile_wrapper.py"
+    },
+    "nunif/modules/init.py": {
+      "sha256": "38a025ad8e6a70986a05d8b03cbce5e105b0af35df11cb095f49b721f7fc9cfb",
+      "destination": "init.py"
+    },
+    "nunif/modules/permute.py": {
+      "sha256": "b20592b486f7d74c883908cb149d7ea7db02c36f3b0e83a04ecb6ca9cfc73b4e",
+      "destination": "permute.py"
+    },
+    "nunif/modules/replication_pad2d.py": {
+      "sha256": "53af0800f9295b969f7532cdbd9e1c8076dd7033a37dbb7584eae1fd7fbeaa0c",
+      "destination": "replication_pad2d.py"
+    },
+    "nunif/modules/gaussian_filter.py": {
+      "sha256": "7d0dec5f49b84e2352ede9e80798d95ce5339bcc9654af6f5570723aaf924c74",
+      "destination": "gaussian_filter.py"
+    },
+    "nunif/modules/norm.py": {
+      "sha256": "df7763142518b51c31c7cee9fe9f61edd37331d4b4af6a053dc072025ed2be62",
+      "destination": "norm.py"
+    },
+    "nunif/modules/attention.py": {
+      "sha256": "98767bec0437a8651102ec25d0c81e0d4b225131fa3e54f423836eeae72d7efc",
+      "destination": "attention.py"
+    },
+    "nunif/modules/rope.py": {
+      "sha256": "d218b527b559d38e94faa9c81906597a36251c72e3617aa732d6f18ba59adcf2",
+      "destination": "rope.py"
+    },
+    "nunif/modules/attention_bias.py": {
+      "sha256": "f9778841c92cb65f9f5dece7740d55fe97d475abc33ae7cb5feaadf4a27c8b5c",
+      "destination": "attention_bias.py"
+    },
+    "iw3/dilation.py": {
+      "sha256": "c23d000e29276b31beb265835406076da67444c228b12a0c9957478ebd93b258",
+      "destination": "dilation.py"
+    },
+    "iw3/forward_warp.py": {
+      "sha256": "b5b08458f9dacb09aac1d9e08114694d00e859361f2a940abdf40bbd2ebabb73",
+      "destination": "forward_warp.py"
+    },
+    "iw3/models/light_inpaint_v1.py": {
+      "sha256": "b96f283941483f8ed35999afb71670ea887fe0a6b7fff8124ee4f4b62fafb92c",
+      "destination": "light_inpaint_v1.py"
+    },
+    "iw3/models/depth_aa.py": {
+      "sha256": "132d27ef377be50bd5a46185eb0a1727f3cd296662f48baa581609a57aadbe3b",
+      "destination": "depth_aa.py"
+    }
+  },
+  "models": [
+    {
+      "name": "iw3_depth_aa_20250530.pth",
+      "size": 297693,
+      "digest": "sha256:5a36c8ebfdde78b60784535b9cd77016cd617faab42228dfa9ae17b657ab9c18",
+      "browser_download_url": "https://github.com/nagadomi/nunif/releases/download/0.0.0/iw3_depth_aa_20250530.pth"
+    },
+    {
+      "name": "iw3_light_inpaint_v1_20250919.pth",
+      "size": 9070711,
+      "digest": "sha256:8b1a85df321ede3ea45d0b37a7f2c509e941687c062e1d584aab8808c253db6d",
+      "browser_download_url": "https://github.com/nagadomi/nunif/releases/download/0.0.0/iw3_light_inpaint_v1_20250919.pth"
+    }
+  ]
+}

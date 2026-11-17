@@ -1,0 +1,39 @@
+iw3 Stereo for ComfyUI
+
+The vendored inference code is derived from nunif / iw3 by nagadomi, MIT License.
+Source: https://github.com/nagadomi/nunif
+Pinned revision: 51117db0ba3a0ef9a949ac58c3386333156258af
+Original license: licenses/nunif.txt
+UPSTREAM.json records original source-file hashes and extracted destinations.
+
+Copied portions: iw3/forward_warp.py, iw3/dilation.py,
+iw3/models/light_inpaint_v1.py, iw3/models/depth_aa.py,
+and the nunif/modules attention, normalization, initialization, permutation,
+padding, Gaussian-filter and compile helpers needed by those two models.
+Non-inference standalone benchmarks/tests are stripped. Imports point to this
+pack's private vendor package. Model registration/metadata use a minimal local
+base instead of the full nunif model registry; tensor inference is unchanged.
+core.py adapts iw3/base_inpaint.py and iw3/forward_inpaint.py's still-image mask,
+eye-orientation and model-inference sequence, and iw3's DA3 depth processing.
+
+Only official release model artifacts are downloaded. No weights are included
+in the distributable archive. Upstream publishes these two models with the MIT
+repository and does not state a separate license for them in the inspected
+release/model sources. The noncommercial warnings in iw3's README concern
+specified third-party depth models, which this pack does not download or bundle.
+An existing user's DA3 model retains its own terms independently.
+
+Design/reference inspection only; no code copied from these repositories:
+https://github.com/Dobidop/ComfyStereo (MIT)
+https://github.com/enoky/resolve-iw3 (MIT)
+https://github.com/SamSeenX/ComfyUI_SSStereoscope
+
+resolve-iw3's stereo_inpaint.py and tests implement monobw_inpaint and MLBW
+pipelines, not the requested forward_inpaint warp. Its LightInpaintV1 checkpoint
+and directional-mask approach were useful cross-checks, but its warp was not
+adopted. Its inspected docs/tests refer to a local nunif checkout and do not
+record an exact upstream commit pin; no revision parity is inferred from that.
+
+All repository revisions inspected are recorded in UPSTREAM.json. ComfyUI core
+source was inspected locally to integrate DA3 and model management; no core
+ComfyUI code is redistributed as part of this pack.

@@ -1,0 +1,9 @@
+[project]
+name = "comfyui-iw3-stereo"
+version = "0.1.0"
+description = "Native iw3 forward inpainting stereo synthesis using existing DA3 depth"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[tool.comfy]
+DisplayName = "iw3 Stereo"

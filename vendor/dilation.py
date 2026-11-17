@@ -1,0 +1,174 @@
+# Derived from nagadomi/nunif (MIT); see NOTICE and licenses/nunif.txt.
+import torch
+import torch.nn.functional as F
+
+
+def edge_dilation_parse(edge_dilation):
+    if isinstance(edge_dilation, (list, tuple)):
+        if len(edge_dilation) == 0:
+            x = y = 0
+        elif len(edge_dilation) == 1:
+            x = y = edge_dilation[0]
+        else:
+            x = edge_dilation[0]
+            y = edge_dilation[1]
+    elif isinstance(edge_dilation, int):
+        x = y = edge_dilation
+    elif edge_dilation is None:
+        x = y = 0
+    else:
+        raise ValueError(f"Unsupported edge_dilation type {type(edge_dilation)}. Supported types: int, list, tuple.")
+
+    return x, y
+
+
+def edge_dilation_is_enabled(edge_dilation):
+    x, y = edge_dilation_parse(edge_dilation)
+    return x != 0 or y != 0
+
+
+_GAUSSIAN_KERNEL: dict[tuple[torch.device, torch.dtype], torch.Tensor] = {}
+
+
+def get_gaussian_kernel(device: torch.device, dtype: torch.dtype) -> torch.Tensor:
+    key = (device, dtype)
+    kernel = _GAUSSIAN_KERNEL.get(key)
+    if kernel is None:
+        kernel = (
+            torch.tensor(
+                [
+                    [21, 31, 21],
+                    [31, 48, 31],
+                    [21, 31, 21],
+                ],
+                dtype=dtype,
+                device=device,
+            ).reshape(1, 1, 3, 3)
+            / 256.0
+        )
+        if len(_GAUSSIAN_KERNEL) >= 8:
+            _GAUSSIAN_KERNEL.clear()
+        _GAUSSIAN_KERNEL[key] = kernel
+
+    return kernel
+
+
+def gaussian_blur(x):
+    kernel = get_gaussian_kernel(x.device, x.dtype)
+    x = F.pad(x, [1] * 4, mode="replicate")
+    x = F.conv2d(x, weight=kernel, bias=None, stride=1, padding=0, groups=1)
+    return x
+
+
+def dilate(mask, kernel_size=3):
+    if isinstance(kernel_size, (list, tuple)):
+        pad = (kernel_size[0] // 2, kernel_size[1] // 2)
+    else:
+        pad = kernel_size // 2
+    return F.max_pool2d(mask, kernel_size=kernel_size, stride=1, padding=pad)
+
+
+def erode(mask, kernel_size=3):
+    if isinstance(kernel_size, (list, tuple)):
+        pad = (kernel_size[0] // 2, kernel_size[1] // 2)
+    else:
+        pad = kernel_size // 2
+    return -F.max_pool2d(-mask, kernel_size=kernel_size, stride=1, padding=pad)
+
+
+def closing(mask, kernel_size=3, n_iter=2):
+    mask = mask.float()
+    for _ in range(n_iter):
+        mask = dilate(mask, kernel_size=kernel_size)
+    for _ in range(n_iter):
+        mask = erode(mask, kernel_size=kernel_size)
+
+    return mask
+
+
+def dilate_outer(mask, n_iter, base_width=None):
+    # right view base
+    if n_iter <= 0:
+        return mask
+
+    mask_dtype = mask.dtype
+
+    if base_width is not None:
+        n_iter = max(round(mask.shape[-1] / base_width * n_iter), 1)
+
+    padded = F.pad(mask.float(), (n_iter, 0, 0, 0), mode="constant", value=0)
+    out = F.max_pool2d(padded, kernel_size=(1, n_iter + 1), stride=1)
+    if mask_dtype == torch.bool:
+        return out.bool()
+    return out.to(mask_dtype)
+
+
+def dilate_inner(mask, n_iter, base_width=None):
+    # right view base
+    if n_iter <= 0:
+        return mask
+
+    mask_dtype = mask.dtype
+
+    if base_width is not None:
+        n_iter = max(round(mask.shape[-1] / base_width * n_iter), 1)
+
+    padded = F.pad(mask.float(), (0, n_iter, 0, 0), mode="constant", value=0)
+    out = F.max_pool2d(padded, kernel_size=(1, n_iter + 1), stride=1)
+    if mask_dtype == torch.bool:
+        return out.bool()
+    return out.to(mask_dtype)
+
+
+def edge_weight(x):
+    assert x.ndim == 4
+    max_v = F.max_pool2d(x, kernel_size=3, stride=1, padding=1)
+    min_v = F.max_pool2d(x.neg(), kernel_size=3, stride=1, padding=1).neg()
+    range_v = max_v - min_v
+    range_c = range_v - range_v.mean(dim=[1, 2, 3], keepdim=True)
+    range_s = range_c.pow(2).mean(dim=[1, 2, 3], keepdim=True).sqrt()
+    w = (range_c / (range_s + 1e-6)).clamp(-3, 3)
+    w_min, w_max = w.amin(dim=[1, 2, 3], keepdim=True), w.amax(dim=[1, 2, 3], keepdim=True)
+    w = (w - w_min) / ((w_max - w_min) + 1e-6)
+
+    return w
+
+
+@torch.inference_mode()
+def dilate_edge(x, n):
+    x_iter, y_iter = edge_dilation_parse(n)
+    xy_iter = min(x_iter, y_iter)
+    x_iter = x_iter - xy_iter
+    y_iter = y_iter - xy_iter
+
+    # print(xy_iter, x_iter, y_iter)
+
+    for _ in range(xy_iter):
+        w = edge_weight(x)
+        x2 = gaussian_blur(x)
+        x2 = dilate(x2, kernel_size=(3, 3))
+        x = (x * (1 - w)) + (x2 * w)
+
+    for _ in range(y_iter):
+        w = edge_weight(x)
+        x2 = gaussian_blur(x)
+        x2 = dilate(x2, kernel_size=(3, 1))
+        x = (x * (1 - w)) + (x2 * w)
+
+    for _ in range(x_iter):
+        w = edge_weight(x)
+        x2 = gaussian_blur(x)
+        x2 = dilate(x2, kernel_size=(1, 3))
+        x = (x * (1 - w)) + (x2 * w)
+
+    return x
+
+
+def mask_closing(mask, kernel_size=3, n_iter=2):
+    mask = mask_org = mask.float()
+    mask = closing(mask, kernel_size=kernel_size, n_iter=n_iter)
+
+    # Add erased isolated pixels
+    mask = (mask + mask_org).clamp(0, 1)
+
+    return mask

@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.pth
+*.part
+.venv/
+.env
+AGENTS.md
+agents.md
+VERIFICATION.md
+verification*
+results/
+work/
+outputs/
